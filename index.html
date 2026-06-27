@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ronald Alex Diaz Pari · EST334</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #04080f;
+      --bg2:       #080e1a;
+      --surface:   #0d1526;
+      --surface2:  #111d30;
+      --border:    #1a2c47;
+      --border2:   #0f1f35;
+      --blue:      #2d7dff;
+      --blue-mid:  #1a5cd4;
+      --blue-dim:  #2d7dff22;
+      --blue-glow: #2d7dff44;
+      --cyan:      #38c6f4;
+      --cyan-dim:  #38c6f418;
+      --violet:    #7c5cff;
+      --ink:       #e8f0fb;
+      --ink-mid:   #8ba3c4;
+      --ink-faint: #3d5a7a;
+      --font:      'Inter', sans-serif;
+      --mono:      'JetBrains Mono', monospace;
+      --radius:    12px;
+      --maxw:      1120px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    ul { list-style: none; }
+    img { max-width: 100%; display: block; }
+    button { font: inherit; cursor: pointer; }
+    .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 28px; }
+
+    #stars-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .45; }
+
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(4,8,15,.82);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border2);
+    }
+    .nav-row { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--mono); font-size: 14px; font-weight: 600; letter-spacing: .03em;
+    }
+    .brand-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--blue), var(--violet));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; line-height: 1;
+    }
+    .brand span { color: var(--ink-mid); }
+    nav.links { display: flex; align-items: center; gap: 6px; }
+    nav.links a {
+      font-size: 13.5px; color: var(--ink-mid);
+      padding: 6px 12px; border-radius: 8px;
+      transition: background .2s, color .2s;
+    }
+    nav.links a:hover { background: var(--surface); color: var(--ink); }
+    .nav-gh {
+      display: flex; align-items: center; gap: 7px;
+      border: 1px solid var(--border); padding: 6px 14px; border-radius: 8px;
+      font-size: 13px; color: var(--ink-mid);
+      transition: border-color .2s, color .2s;
+    }
+    .nav-gh:hover { border-color: var(--blue); color: var(--ink); }
+    .burger { display: none; background: none; border: 1px solid var(--border); border-radius: 8px; padding: 7px 9px; color: var(--ink); font-size: 16px; }
+
+    @media (max-width: 720px) {
+      nav.links {
+        position: absolute; top: 60px; left: 0; right: 0;
+        background: var(--bg2); border-bottom: 1px solid var(--border2);
+        flex-direction: column; align-items: stretch; gap: 0;
+        max-height: 0; overflow: hidden; transition: max-height .3s ease;
+      }
+      nav.links.open { max-height: 400px; }
+      nav.links a { border-radius: 0; padding: 14px 28px; border-bottom: 1px solid var(--border2); }
+      .burger { display: flex; }
+    }
+
+    .hero {
+      position: relative; z-index: 1;
+      padding: 160px 0 100px;
+      background:
+        radial-gradient(ellipse 80% 50% at 60% -10%, #1040a044, transparent),
+        radial-gradient(ellipse 60% 40% at 90% 80%, #7c5cff18, transparent);
+    }
+    .hero-inner { position: relative; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--mono); font-size: 11px; font-weight: 600;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--cyan); background: var(--cyan-dim);
+      border: 1px solid #38c6f430;
+      padding: 6px 14px; border-radius: 999px; margin-bottom: 28px;
+    }
+    .badge::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--cyan); box-shadow: 0 0 8px var(--cyan);
+      animation: pulse 2s ease infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+    .hero h1 {
+      font-size: clamp(48px, 8vw, 88px); font-weight: 900;
+      line-height: 1.0; letter-spacing: -.03em; margin-bottom: 24px;
+    }
+    .hero h1 .line2 {
+      background: linear-gradient(90deg, var(--blue) 0%, var(--cyan) 50%, var(--violet) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero .lead { max-width: 500px; color: var(--ink-mid); font-size: 16.5px; margin-bottom: 38px; line-height: 1.7; }
+    .hero-cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: linear-gradient(135deg, var(--blue-mid), var(--blue));
+      color: #fff; font-weight: 600; font-size: 14px;
+      padding: 14px 26px; border-radius: 10px; border: none;
+      box-shadow: 0 0 28px var(--blue-glow);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 0 40px var(--blue-glow); }
+    .stats-row { display: flex; gap: 16px; margin-top: 64px; flex-wrap: wrap; }
+    .stat-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px 28px;
+      display: flex; flex-direction: column; gap: 4px; min-width: 130px;
+    }
+    .stat-box .val { font-family: var(--mono); font-size: 32px; font-weight: 700; color: var(--blue); line-height: 1; }
+    .stat-box .lbl { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
+
+    section { position: relative; z-index: 1; padding: 96px 0; }
+    .section-eyebrow {
+      font-family: var(--mono); font-size: 11px; font-weight: 600;
+      letter-spacing: .16em; text-transform: uppercase;
+      color: var(--blue); margin-bottom: 14px;
+    }
+    .section-title { font-size: clamp(28px, 4vw, 40px); font-weight: 800; letter-spacing: -.02em; margin-bottom: 48px; }
+
+    .about-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 48px;
+      display: grid; grid-template-columns: auto 1fr; gap: 48px; align-items: start;
+    }
+    .photo-wrap {
+      width: 140px; height: 140px; border-radius: 50%;
+      border: 3px solid var(--blue); padding: 4px;
+      background: var(--surface2); overflow: hidden; flex-shrink: 0;
+    }
+    .photo-wrap img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .photo-wrap .initials {
+      width: 100%; height: 100%; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 42px; font-weight: 800; color: var(--blue); background: var(--surface2);
+    }
+    .about-info { display: flex; flex-direction: column; gap: 20px; }
+    .about-name { font-size: 28px; font-weight: 800; letter-spacing: -.02em; }
+    .about-sub { color: var(--ink-mid); font-size: 15px; }
+    .about-chips { display: flex; flex-wrap: wrap; gap: 12px; }
+    .chip {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 18px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .chip .chip-label { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
+    .chip .chip-val { font-weight: 600; font-size: 14px; }
+    @media (max-width: 680px) {
+      .about-card { grid-template-columns: 1fr; text-align: center; padding: 32px; }
+      .photo-wrap { margin: 0 auto; }
+      .about-chips { justify-content: center; }
+    }
+
+    .unit-header { display: flex; align-items: center; gap: 16px; margin: 56px 0 28px; }
+    .unit-badge {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--blue-mid), var(--violet));
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .unit-name { font-size: 17px; font-weight: 700; }
+    .unit-line { flex: 1; height: 1px; background: var(--border); }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+
+    .task-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      display: flex; flex-direction: column;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+    }
+    .task-card:hover { border-color: var(--blue); transform: translateY(-3px); box-shadow: 0 8px 32px #2d7dff18; }
+    .task-thumb {
+      height: 160px;
+      background: linear-gradient(135deg, var(--bg2), var(--surface2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px; color: var(--ink-faint); flex-shrink: 0;
+      position: relative; overflow: hidden;
+    }
+    .task-thumb::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to bottom, transparent 60%, var(--surface));
+    }
+    .task-id-badge {
+      position: absolute; top: 12px; left: 12px;
+      font-family: var(--mono); font-size: 11px; font-weight: 600;
+      background: var(--bg); border: 1px solid var(--border);
+      padding: 3px 10px; border-radius: 6px; color: var(--ink-mid); z-index: 1;
+    }
+    .task-body { padding: 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+    .task-title { font-size: 16px; font-weight: 700; }
+    .task-desc { font-size: 13.5px; color: var(--ink-mid); line-height: 1.5; }
+    .task-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+    .task-tag {
+      font-family: var(--mono); font-size: 10.5px;
+      color: var(--ink-mid); border: 1px solid var(--border);
+      border-radius: 99px; padding: 3px 10px;
+    }
+    .task-foot {
+      padding: 14px 20px; border-top: 1px solid var(--border2);
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: auto;
+    }
+    .task-date { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); margin-right: auto; }
+    .status-badge {
+      font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--cyan); background: var(--cyan-dim); border: 1px solid #38c6f428; padding: 3px 10px; border-radius: 6px;
+    }
+    .btn-preview, .btn-dl {
+      font-family: var(--mono); font-size: 12px; font-weight: 500;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: 8px;
+      border: 1px solid var(--border); color: var(--ink-mid);
+      background: transparent; transition: border-color .2s, color .2s, background .2s;
+      text-decoration: none;
+    }
+    .btn-preview:hover { border-color: var(--blue); color: var(--ink); background: var(--blue-dim); }
+    .btn-dl { color: var(--cyan); border-color: #38c6f428; }
+    .btn-dl:hover { background: var(--cyan-dim); border-color: var(--cyan); }
+
+    .empty {
+      grid-column: 1/-1; text-align: center; padding: 48px 20px;
+      border: 1px dashed var(--border); border-radius: var(--radius);
+      font-family: var(--mono); font-size: 13px; color: var(--ink-faint);
+    }
+
+    .contact-links { display: flex; gap: 14px; flex-wrap: wrap; }
+    .contact-link {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: var(--mono); font-size: 14px;
+      border: 1px solid var(--border); padding: 14px 22px; border-radius: 10px;
+      color: var(--ink-mid); transition: border-color .2s, color .2s;
+    }
+    .contact-link:hover { border-color: var(--blue); color: var(--ink); }
+
+    footer {
+      border-top: 1px solid var(--border2); padding: 28px 0;
+      font-family: var(--mono); font-size: 12px; color: var(--ink-faint);
+      text-align: center; position: relative; z-index: 1;
+    }
+
+    .visor-overlay {
+      position: fixed; inset: 0;
+      background: rgba(4,8,15,.94); backdrop-filter: blur(6px);
+      z-index: 300; display: none; align-items: center; justify-content: center; padding: 24px;
+    }
+    .visor-overlay.open { display: flex; }
+    .visor-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; width: min(920px, 100%); max-height: 88vh;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .visor-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px; border-bottom: 1px solid var(--border2); flex-shrink: 0;
+    }
+    .visor-bar h4 { font-family: var(--mono); font-size: 13px; color: var(--ink-mid); }
+    .visor-close { background: none; border: none; color: var(--ink-mid); font-size: 20px; border-radius: 6px; padding: 4px 8px; cursor: pointer; }
+    .visor-close:hover { background: var(--surface2); color: var(--ink); }
+    .visor-body { flex: 1; overflow: auto; display: flex; min-height: 60vh; }
+    .visor-body iframe, .visor-body video, .visor-body img { width: 100%; height: 100%; min-height: 60vh; border: none; object-fit: contain; }
+
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .55s ease, transform .55s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+  </style>
+</head>
+<body>
+
+<canvas id="stars-canvas"></canvas>
+
+<header>
+  <div class="wrap nav-row">
+    <a class="brand" href="#inicio">
+      <div class="brand-icon">◈</div>
+      EST334 <span>/ Ronald</span>
+    </a>
+    <nav class="links" id="navLinks">
+      <a href="#inicio">Inicio</a>
+      <a href="#sobre-mi">Sobre mí</a>
+      <a href="#tareas">Tareas</a>
+      <a href="#contacto">Contacto</a>
+      <a class="nav-gh" href="https://github.com/ronaldpari" target="_blank" rel="noopener">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </nav>
+    <button class="burger" id="burgerBtn">☰</button>
+  </div>
+</header>
+
+<section class="hero" id="inicio">
+  <div class="wrap hero-inner">
+    <div class="badge">Curso 2026-I</div>
+    <h1>Estadística<br><span class="line2">Espacial</span></h1>
+    <p class="lead">Portafolio de análisis y tareas del curso EST334 — Universidad Nacional del Altiplano, Puno 2026-I.</p>
+    <a class="hero-cta" href="#tareas">↓ Explorar tareas</a>
+    <div class="stats-row">
+      <div class="stat-box">
+        <span class="val" id="statTotal">00</span>
+        <span class="lbl">Tareas</span>
+      </div>
+      <div class="stat-box">
+        <span class="val" id="statDone">00</span>
+        <span class="lbl">Completadas</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="sobre-mi">
+  <div class="wrap">
+    <p class="section-eyebrow reveal">Sobre mí</p>
+    <div class="about-card reveal">
+      <div class="photo-wrap">
+        <img src="assets/foto/foto.jpg" alt="Ronald Alex Diaz Pari" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+        <div class="initials" style="display:none">RD</div>
+      </div>
+      <div class="about-info">
+        <div>
+          <div class="about-name">Ronald Alex Diaz Pari</div>
+          <div class="about-sub" style="margin-top:6px">Estudiante de Estadística e Informática</div>
+        </div>
+        <div class="about-chips">
+          <div class="chip"><span class="chip-label">Carrera</span><span class="chip-val">Estadística e Informática</span></div>
+          <div class="chip"><span class="chip-label">Universidad</span><span class="chip-val">UNAP</span></div>
+          <div class="chip"><span class="chip-label">Ciudad</span><span class="chip-val">Puno, Perú</span></div>
+          <div class="chip"><span class="chip-label">Semestre</span><span class="chip-val">10.º Semestre</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="tareas">
+  <div class="wrap">
+    <p class="section-eyebrow reveal">Trabajos</p>
+    <h2 class="section-title reveal">Tareas del curso</h2>
+
+    <div class="unit-header reveal">
+      <div class="unit-badge">I</div>
+      <span class="unit-name">Unidad I</span>
+      <div class="unit-line"></div>
+    </div>
+    <div class="grid" id="grid1"></div>
+
+    <div class="unit-header reveal" style="margin-top:60px">
+      <div class="unit-badge">II</div>
+      <span class="unit-name">Unidad II</span>
+      <div class="unit-line"></div>
+    </div>
+    <div class="grid" id="grid2"></div>
+  </div>
+</section>
+
+<section id="contacto">
+  <div class="wrap">
+    <p class="section-eyebrow reveal">Contacto</p>
+    <h2 class="section-title reveal">¿Hablamos?</h2>
+    <div class="contact-links reveal">
+      <a class="contact-link" href="mailto:ronald.diaz@unap.edu.pe">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        ronald.diaz@unap.edu.pe
+      </a>
+      <a class="contact-link" href="https://github.com/ronaldpari" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        github.com/ronaldpari
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Portafolio EST334 · Estadística Espacial · UNAP 2026-I — Ronald Alex Diaz Pari
+  </div>
+</footer>
+
+<!-- VISOR -->
+<div class="visor-overlay" id="visorOverlay">
+  <div class="visor-box">
+    <div class="visor-bar">
+      <h4 id="visorTitle">Vista previa</h4>
+      <button class="visor-close" id="visorClose">✕</button>
+    </div>
+    <div class="visor-body" id="visorBody"></div>
+  </div>
+</div>
+
+<!--
+  ╔══════════════════════════════════════════════════════════════╗
+  ║  TAREAS — EDITA ESTE OBJETO PARA AGREGAR / QUITAR TAREAS   ║
+  ║                                                              ║
+  ║  Para agregar una tarea:                                     ║
+  ║  1. Sube tu archivo a tareas/unidad1/ o tareas/unidad2/     ║
+  ║  2. Copia el bloque de ejemplo y pega abajo                  ║
+  ║  3. Cambia los datos (title, desc, file, etc.)               ║
+  ║  4. Sube el index.html actualizado a GitHub                  ║
+  ╚══════════════════════════════════════════════════════════════╝
+-->
+<script>
+// ══════════════════════════════════════════════
+//   ★ AGREGA TUS TAREAS AQUÍ ★
+//   Copia un bloque y cambia los valores.
+//   El campo "file" es la ruta relativa al archivo
+//   que subiste a la carpeta tareas/unidadX/
+// ══════════════════════════════════════════════
+const TAREAS = [
+
+  // ── EJEMPLOS DE UNIDAD I ──────────────────
+  // Descomenta y edita para usar:
+
+  // {
+  //   id:    "T01",
+  //   unit:  "1",
+  //   title: "Introducción a la Estadística Espacial",
+  //   desc:  "Conceptos fundamentales de autocorrelación espacial y patrones.",
+  //   tags:  ["teoría", "SIG", "autocorrelación"],
+  //   date:  "jun 2026",
+  //   type:  "pdf",           // "pdf" | "imagen" | "video"
+  //   file:  "tareas/unidad1/tarea01.pdf"   // ruta relativa desde index.html
+  // },
+
+  // {
+  //   id:    "T02",
+  //   unit:  "1",
+  //   title: "Mapa de Interpolación IDW",
+  //   desc:  "Interpolación espacial usando el método IDW en R.",
+  //   tags:  ["R", "IDW", "interpolación"],
+  //   date:  "jun 2026",
+  //   type:  "imagen",
+  //   file:  "tareas/unidad1/mapa_idw.png"
+  // },
+
+  // ── EJEMPLOS DE UNIDAD II ─────────────────
+
+  // {
+  //   id:    "T03",
+  //   unit:  "2",
+  //   title: "Kriging Ordinario",
+  //   desc:  "Aplicación de Kriging para modelado de superficies continuas.",
+  //   tags:  ["Kriging", "geoestadística", "R"],
+  //   date:  "jun 2026",
+  //   type:  "pdf",
+  //   file:  "tareas/unidad2/tarea_kriging.pdf"
+  // },
+
+];
+// ══════════════════════════════════════════════
+//   FIN DE LA LISTA DE TAREAS
+// ══════════════════════════════════════════════
+
+
+// ── Stars canvas ──────────────────────────────
+(function() {
+  const canvas = document.getElementById('stars-canvas');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  for (let i = 0; i < 180; i++) stars.push({ x: Math.random(), y: Math.random(), r: Math.random()*1.2+0.2, o: Math.random()*.7+.1, s: Math.random()*.004+.001 });
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    frame += 0.01;
+    stars.forEach(s => {
+      const f = s.o + Math.sin(frame*s.s*80+s.x*99)*0.15;
+      ctx.beginPath(); ctx.arc(s.x*canvas.width, s.y*canvas.height, s.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(180,210,255,${f})`; ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ── Helpers ───────────────────────────────────
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function icon(type) {
+  return { pdf:'📄', imagen:'🖼️', video:'🎬' }[type] || '📁';
+}
+
+// ── Render ────────────────────────────────────
+function renderGrid(list) {
+  if (!list.length) return `<div class="empty">📭 No hay tareas en esta unidad aún.</div>`;
+  return list.map(t => {
+    const tags = (t.tags||[]).map(g=>`<span class="task-tag">${esc(g)}</span>`).join('');
+    let btns = '';
+    if (t.file) {
+      if (t.type === 'pdf') {
+        btns = `<button class="btn-preview" data-src="${esc(t.file)}" data-type="pdf" data-title="${esc(t.title)}">👁 Vista previa</button>
+                <a class="btn-dl" href="${esc(t.file)}" download>⬇ Descargar</a>`;
+      } else if (t.type === 'imagen') {
+        btns = `<button class="btn-preview" data-src="${esc(t.file)}" data-type="imagen" data-title="${esc(t.title)}">👁 Ver imagen</button>
+                <a class="btn-dl" href="${esc(t.file)}" download>⬇ Descargar</a>`;
+      } else if (t.type === 'video') {
+        btns = `<button class="btn-preview" data-src="${esc(t.file)}" data-type="video" data-title="${esc(t.title)}">▶ Ver video</button>`;
+      }
+    }
+    return `
+      <article class="task-card reveal">
+        <div class="task-thumb">
+          <span class="task-id-badge">${esc(t.id)}</span>
+          ${icon(t.type)}
+        </div>
+        <div class="task-body">
+          <div class="task-title">${esc(t.title)}</div>
+          <div class="task-desc">${esc(t.desc)}</div>
+          ${tags ? `<div class="task-tags">${tags}</div>` : ''}
+        </div>
+        <div class="task-foot">
+          <span class="task-date">📅 ${esc(t.date)}</span>
+          <span class="status-badge">COMPLETADA</span>
+        </div>
+        ${btns ? `<div class="task-foot" style="padding-top:0;border-top:none;">${btns}</div>` : ''}
+      </article>`;
+  }).join('');
+}
+
+function renderAll() {
+  const u1 = TAREAS.filter(t => t.unit === '1');
+  const u2 = TAREAS.filter(t => t.unit === '2');
+  document.getElementById('grid1').innerHTML = renderGrid(u1);
+  document.getElementById('grid2').innerHTML = renderGrid(u2);
+  const total = TAREAS.length;
+  document.getElementById('statTotal').textContent = String(total).padStart(2,'0');
+  document.getElementById('statDone').textContent  = String(total).padStart(2,'0');
+  bindVisor();
+  observeReveals();
+}
+
+// ── Visor ─────────────────────────────────────
+function bindVisor() {
+  document.querySelectorAll('.btn-preview').forEach(btn => {
+    btn.onclick = () => {
+      const src   = btn.dataset.src;
+      const type  = btn.dataset.type;
+      const title = btn.dataset.title;
+      document.getElementById('visorTitle').textContent = title || 'Vista previa';
+      const body = document.getElementById('visorBody');
+      body.innerHTML = '';
+      let el;
+      if (type === 'pdf') {
+        el = document.createElement('iframe');
+        el.src = src;
+      } else if (type === 'imagen') {
+        el = document.createElement('img');
+        el.src = src; el.alt = title;
+      } else if (type === 'video') {
+        el = document.createElement('video');
+        el.src = src; el.controls = true; el.autoplay = true;
+      }
+      if (el) body.appendChild(el);
+      document.getElementById('visorOverlay').classList.add('open');
+    };
+  });
+}
+
+document.getElementById('visorClose').onclick = cerrarVisor;
+document.getElementById('visorOverlay').onclick = e => { if (e.target === e.currentTarget) cerrarVisor(); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarVisor(); });
+function cerrarVisor() {
+  document.getElementById('visorOverlay').classList.remove('open');
+  document.getElementById('visorBody').innerHTML = '';
+}
+
+// ── Nav móvil ─────────────────────────────────
+document.getElementById('burgerBtn').onclick = () => {
+  document.getElementById('navLinks').classList.toggle('open');
+};
+document.querySelectorAll('#navLinks a').forEach(a => a.onclick = () =>
+  document.getElementById('navLinks').classList.remove('open')
+);
+
+// ── Scroll reveal ─────────────────────────────
+function observeReveals() {
+  const io = new IntersectionObserver(entries =>
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+    { threshold: .1 }
+  );
+  document.querySelectorAll('.reveal:not(.visible)').forEach(el => io.observe(el));
+}
+observeReveals();
+
+// ── Init ──────────────────────────────────────
+renderAll();
+</script>
+</body>
+</html>
